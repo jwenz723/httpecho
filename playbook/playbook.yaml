@@ -1,0 +1,24 @@
+- hosts: pi
+  tasks:
+  - name: copy httpecho
+    become: true
+    copy:
+      src: ../httpecho
+      dest: /usr/bin/httpecho
+      mode: 0555
+
+  - name: copy service definition
+    become: true
+    template:
+      src: templates/httpecho.service.j2
+      dest: /etc/systemd/system/httpecho.service
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: start httpecho
+    become: true
+    systemd:
+      name: httpecho
+      state: started
+      enabled: True
