@@ -7,26 +7,29 @@ FROM golang:alpine AS builder
 # Git is required for fetching the dependencies.
 RUN apk update && apk add --no-cache git
 
+# Create appuser.
+RUN adduser -D -g '' appuser
+
 # Copy in the source code
 COPY . $GOPATH/src/github.com/jwenz723/httpecho/
 WORKDIR $GOPATH/src/github.com/jwenz723/httpecho/
-
-# Create appuser.
-#RUN adduser --system --no-create-home appuser
-RUN adduser -D -g '' appuser
 
 # Fetch dependencies.
 # Using go get.
 RUN go get -d -v
 
+# Using go mod.
+# RUN go mod download
+
 # Build the binary.
-RUN GOOS=linux GOARCH=arm GOARM=5 go build -ldflags="-w -s" -o /go/bin/httpecho
+#RUN GOOS=linux GOARCH=arm GOARM=5 go build -ldflags="-w -s" -o /go/bin/httpecho
+RUN go build -ldflags="-w -s" -o /go/bin/httpecho
 
 
 ############################
 # STEP 2 build a small image
 ############################
-FROM scratch
+FROM alpine
 
 # Import the user and group files from the builder.
 COPY --from=builder /etc/passwd /etc/passwd
